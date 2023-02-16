@@ -3,83 +3,13 @@
 #include <Adafruit_MPU6050.h> // IMPORTANT!!! Set MPU6050_DEVICE_ID in Adafruit_MPU6050.h to 0x72 if code below does not work.
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
-// #include <ArduinoJson.h>
-
-// #include <esp32cam.h>
-// #include <WebServer.h>
 #include <WiFi.h>
-#include "AsyncUDP.h"
-// #include <esp_camera.h>
 
 const char* WIFI_SSID = "esp32";
 const char* WIFI_PASS = "givelife";
 
 WiFiServer server(63000);
-
 Adafruit_MPU6050 mpu;
-
-// bool mpu_valid = false;
-
-// void handleIMU()
-// {
-  // auto frame = esp32cam::capture();
-  // if (frame == nullptr) {
-  //   Serial.println("IMU CAPTURE FAIL");
-  //   server.send(503, "", "");
-  //   return;
-  // }
-  // Serial.printf("CAPTURE OK %dx%d %db\n", frame->getWidth(), frame->getHeight(),
-                // static_cast<int>(frame->size()));
-
-  // server.setContentLength(frame->size());
-  // server.send(200, "application/plain");
-  // WiFiClient client = server.client();
-  // frame->writeTo(client);
-// }
-
-void serveImuJson()
-{
-  // print("request received")
-  sensors_event_t a, g, temp;
-  if(mpu.getEvent(&a, &g, &temp))
-  {
-   
-    // Serial.print("Acceleration X: ");
-    // Serial.print(a.acceleration.x);
-    // StaticJsonDocument<512> data;
-    // data["acceleration"];
-    // data["acceleration"]["x"] = a.acceleration.x;
-    // data["acceleration"]["y"] = a.acceleration.y;
-    // data["acceleration"]["z"] = a.acceleration.z;
-
-    // data["rotation"];
-    // data["rotation"]["x"] = g.gyro.x;
-    // data["rotation"]["y"] = g.gyro.y;
-    // data["rotation"]["z"] = g.gyro.z;
-    
-
-
-    // char serializedData[512];
-    // String serializedData = "acceleration: x: " + String(a.acceleration.x) +  "; y: " + String(a.acceleration.y) + "; z: " + String(a.acceleration.z) + "; rotation: x "+ String(g.gyro.x) +  "; y: " + String(g.gyro.y) + "; z: " + String(g.gyro.z) + ";";
-    // char
-    //  server.setContentLength(serializedData.length());
-    // serializeJson(data, serializedData);
-    // serializeJsonPretty(data, Serial);
-    // WiFiClient client = server.client();
-    // server.send(200, "text/plain");
-    // client.write(serializedData.c_str(), serializedData.length());
-    // server.send(200, "text/plain", "test");
-  }
-  else
-  {
-    // server.send(400, "text/plain", "error");    
-  }
-  
-  
-  // WiFiClient client = server.client();
-  // frame->writeTo(client);
-
-}
 
 void setup(void) {
   Serial.begin(115200);
@@ -162,33 +92,13 @@ void setup(void) {
   // below code is for setting up WIFI AP
   WiFi.softAP(WIFI_SSID, WIFI_PASS);
   WiFi.setSleep(false);
-  // till here
-
-  // below code is for connecting to WIFI
-  // WiFi.persistent(false);
-  // WiFi.mode(WIFI_STA);
-  // WiFi.begin(WIFI_SSID, WIFI_PASS);
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  // }
-  // till here
 
   Serial.print("http://");
 
   // below code is for setting up a WIFI AP
   IPAddress myIP = WiFi.softAPIP();
-  Serial.print(myIP);
+  Serial.println(myIP);
 
-  // Serial.println("  /cam.bmp");
-  // Serial.println("  /cam-lo.jpg");
-  Serial.println("/imu.txt");
-  // Serial.println("  /cam.mjpeg");
-
-  // server.on("/cam.bmp", handleBmp);
-  // server.on("/cam-lo.jpg", handleJpgLo);
-  // server.on("/imu.txt", serveImuJson);
-  // server.on("/cam.jpg", handleJpg);
-  // server.on("/cam.mjpeg", handleMjpeg);
   server.setNoDelay(true);
 
   server.begin();
@@ -206,12 +116,14 @@ void loop() {
       {
         String serializedData = String(a.acceleration.x) + ";" + String(a.acceleration.y) + ";" + String(a.acceleration.z) + ";" + String(g.gyro.x) +  ";" + String(g.gyro.y) + ";" + String(g.gyro.z);
 
+        // Serial.flush();
+        // Serial.println(serializedData);
         if (client.available()) {
           client.write(serializedData.c_str());
           client.flush();
         }
         
-        delayMicroseconds(500);
+        delayMicroseconds(1000);
       }      
     }
   }
